@@ -84,13 +84,13 @@ MapOptimization::MapOptimization(const std::string &name, Channel<AssociationOut
   aftMappedTrans.child_frame_id = "aft_mapped";
 
   // Declare parameters
-  this->declare_parameter(PARAM_ENABLE_LOOP);
-  this->declare_parameter(PARAM_SEARCH_RADIUS);
-  this->declare_parameter(PARAM_SEARCH_NUM);
-  this->declare_parameter(PARAM_HISTORY_SEARCH_RADIUS);
-  this->declare_parameter(PARAM_HISTORY_SEARCH_NUM);
-  this->declare_parameter(PARAM_HISTORY_SCORE);
-  this->declare_parameter(PARAM_GLOBAL_SEARCH_RADIUS);
+  this->declare_parameter(PARAM_ENABLE_LOOP, true);
+  this->declare_parameter(PARAM_SEARCH_RADIUS, 50.0);
+  this->declare_parameter(PARAM_SEARCH_NUM, 50);
+  this->declare_parameter(PARAM_HISTORY_SEARCH_RADIUS, 7.0);
+  this->declare_parameter(PARAM_HISTORY_SEARCH_NUM, 25);
+  this->declare_parameter(PARAM_HISTORY_SCORE, 0.3);
+  this->declare_parameter(PARAM_GLOBAL_SEARCH_RADIUS, 500.0);
 
   // Read parameters
   if (!this->get_parameter(PARAM_ENABLE_LOOP, _loop_closure_enabled)) {
@@ -500,13 +500,14 @@ void MapOptimization::publishTF() {
   tf2::Quaternion q;
   geometry_msgs::msg::Quaternion geoQuat;
   q.setRPY(transformAftMapped[2], -transformAftMapped[0], -transformAftMapped[1]);
-  geoQuat = tf2::toMsg(q);
+  //geoQuat = tf2::toMsg(q);
+  //tf2::convert(q, geoQuat);
 
   odomAftMapped.header.stamp = timeLaserOdometry;
-  odomAftMapped.pose.pose.orientation.x = -geoQuat.y;
-  odomAftMapped.pose.pose.orientation.y = -geoQuat.z;
-  odomAftMapped.pose.pose.orientation.z = geoQuat.x;
-  odomAftMapped.pose.pose.orientation.w = geoQuat.w;
+  odomAftMapped.pose.pose.orientation.x = -q.getY();
+  odomAftMapped.pose.pose.orientation.y = -q.getZ();
+  odomAftMapped.pose.pose.orientation.z = q.getX();
+  odomAftMapped.pose.pose.orientation.w = q.getW();
   odomAftMapped.pose.pose.position.x = transformAftMapped[3];
   odomAftMapped.pose.pose.position.y = transformAftMapped[4];
   odomAftMapped.pose.pose.position.z = transformAftMapped[5];
@@ -522,10 +523,10 @@ void MapOptimization::publishTF() {
   aftMappedTrans.transform.translation.x = transformAftMapped[3];
   aftMappedTrans.transform.translation.y = transformAftMapped[4];
   aftMappedTrans.transform.translation.z = transformAftMapped[5];
-  aftMappedTrans.transform.rotation.x = -geoQuat.y;
-  aftMappedTrans.transform.rotation.y = -geoQuat.z;
-  aftMappedTrans.transform.rotation.z = geoQuat.x;
-  aftMappedTrans.transform.rotation.w = geoQuat.w;
+  aftMappedTrans.transform.rotation.x = -q.getY();
+  aftMappedTrans.transform.rotation.y = -q.getZ();
+  aftMappedTrans.transform.rotation.z = q.getX();
+  aftMappedTrans.transform.rotation.w = q.getW();
   tfBroadcaster->sendTransform(aftMappedTrans);
 }
 

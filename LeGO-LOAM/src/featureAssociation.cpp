@@ -65,13 +65,13 @@ FeatureAssociation::FeatureAssociation(const std::string &name, Channel<Projecti
   _cycle_count = 0;
 
   // Declare parameters
-  this->declare_parameter(PARAM_VERTICAL_SCANS);
-  this->declare_parameter(PARAM_HORIZONTAL_SCANS);
-  this->declare_parameter(PARAM_SCAN_PERIOD);
-  this->declare_parameter(PARAM_FREQ_DIVIDER);
-  this->declare_parameter(PARAM_EDGE_THRESHOLD);
-  this->declare_parameter(PARAM_SURF_THRESHOLD);
-  this->declare_parameter(PARAM_DISTANCE);
+  this->declare_parameter(PARAM_VERTICAL_SCANS, 16);
+  this->declare_parameter(PARAM_HORIZONTAL_SCANS, 1800);
+  this->declare_parameter(PARAM_SCAN_PERIOD, 0.1);
+  this->declare_parameter(PARAM_FREQ_DIVIDER, 5);
+  this->declare_parameter(PARAM_EDGE_THRESHOLD, 0.1);
+  this->declare_parameter(PARAM_SURF_THRESHOLD, 0.1);
+  this->declare_parameter(PARAM_DISTANCE, 5.0);
 
   float nearest_dist;
 
@@ -1198,13 +1198,14 @@ void FeatureAssociation::publishOdometry() {
   tf2::Quaternion q;
   geometry_msgs::msg::Quaternion geoQuat;
   q.setRPY(transformSum[2], -transformSum[0], -transformSum[1]);
-  geoQuat = tf2::toMsg(q);
+  //geoQuat = tf2::toMsg(q);
+  //tf2::convert(q, geoQuat);
 
   laserOdometry.header.stamp = cloudHeader.stamp;
-  laserOdometry.pose.pose.orientation.x = -geoQuat.y;
-  laserOdometry.pose.pose.orientation.y = -geoQuat.z;
-  laserOdometry.pose.pose.orientation.z = geoQuat.x;
-  laserOdometry.pose.pose.orientation.w = geoQuat.w;
+  laserOdometry.pose.pose.orientation.x = -q.getY();
+  laserOdometry.pose.pose.orientation.y = -q.getZ();
+  laserOdometry.pose.pose.orientation.z = q.getX();
+  laserOdometry.pose.pose.orientation.w = q.getW();
   laserOdometry.pose.pose.position.x = transformSum[3];
   laserOdometry.pose.pose.position.y = transformSum[4];
   laserOdometry.pose.pose.position.z = transformSum[5];
@@ -1214,10 +1215,10 @@ void FeatureAssociation::publishOdometry() {
   laserOdometryTrans.transform.translation.x = transformSum[3];
   laserOdometryTrans.transform.translation.y = transformSum[4];
   laserOdometryTrans.transform.translation.z = transformSum[5];
-  laserOdometryTrans.transform.rotation.x = -geoQuat.y;
-  laserOdometryTrans.transform.rotation.y = -geoQuat.z;
-  laserOdometryTrans.transform.rotation.z = geoQuat.x;
-  laserOdometryTrans.transform.rotation.w = geoQuat.w;
+  laserOdometryTrans.transform.rotation.x = -q.getY();
+  laserOdometryTrans.transform.rotation.y = -q.getZ();
+  laserOdometryTrans.transform.rotation.z = q.getX();
+  laserOdometryTrans.transform.rotation.w = q.getW();
   tfBroadcaster->sendTransform(laserOdometryTrans);
 }
 
